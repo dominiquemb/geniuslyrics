@@ -47,16 +47,18 @@ options.keys.each_with_index do |key, index|
     end
 end
 
-if albumname.length > 0 
-    searchquery << albumname
+if songname.length > 0 && artistname.length > 0
+    searchquery << songname
+elsif songname.length > 0
+    searchquery << songname
 end
 
 if artistname.length > 0
     searchquery << artistname
 end 
 
-if songname.length > 0
-    searchquery << songname
+if albumname.length > 0 && songname.length == 0 
+    searchquery << albumname
 end
 
 # build search query
@@ -86,46 +88,49 @@ if songname.length > 0
         first_song_result = session.all('search-result-section')[1]
         p 'section'
         p first_song_result
-        first_song_result.first('.mini_card-title').trigger('click')
-        
-        if session.has_selector?('.header_with_cover_art-primary_info-title')
-            artist_dirname = (Zaru.sanitize! session.first('.header_with_cover_art-primary_info-primary_artist').text).gsub(/\s{1,}/, "_")
-            album_dirname = (Zaru.sanitize! session.first('song-primary-album .metadata_unit-info a').text).gsub(/\s{1,}/, "_")
+        if session.has_selector?('.mini_card-title')
 
-            if verbose
-                p 'Artist directory name:'
-                p artist_dirname
+            first_song_result.first('.mini_card-title').trigger('click')
+            
+            if session.has_selector?('.header_with_cover_art-primary_info-title')
+                artist_dirname = (Zaru.sanitize! session.first('.header_with_cover_art-primary_info-primary_artist').text).gsub(/\s{1,}/, "_")
+                album_dirname = (Zaru.sanitize! session.first('song-primary-album .metadata_unit-info a').text).gsub(/\s{1,}/, "_")
 
-                p 'Album directory name:' 
-                p album_dirname 
-            end
-
-            Dir.mkdir(artist_dirname) unless File.exists?(artist_dirname)
-
-            if File.exists?(artist_dirname)
-                album_dir_path = "%s/%s" % [artist_dirname, album_dirname]
-                Dir.mkdir(album_dir_path) unless File.exists?(album_dir_path)
-            end
-
-            lyricstext = ""
-
-            if session.has_selector?('.lyrics')
-                lyricstext = session.first('.lyrics').text
-
-                songtitle = session.first('.header_with_cover_art-primary_info-title').text
-                songtitle_with_underscores = (Zaru.sanitize! songtitle).gsub(/\s{1,}/, "_")
-
-                lyrics_path = "%s/%s.txt" % [album_dir_path, songtitle_with_underscores]
-
-                lyricsfile = File.open(lyrics_path, "w")
-                lyricsfile.puts(lyricstext) 
-                
                 if verbose
-                    p "Lyrics for %s:" % songtitle
-                    puts lyricstext
+                    p 'Artist directory name:'
+                    p artist_dirname
+
+                    p 'Album directory name:' 
+                    p album_dirname 
                 end
 
-                lyricsfile.close
+                Dir.mkdir(artist_dirname) unless File.exists?(artist_dirname)
+
+                if File.exists?(artist_dirname)
+                    album_dir_path = "%s/%s" % [artist_dirname, album_dirname]
+                    Dir.mkdir(album_dir_path) unless File.exists?(album_dir_path)
+                end
+
+                lyricstext = ""
+
+                if session.has_selector?('.lyrics')
+                    lyricstext = session.first('.lyrics').text
+
+                    songtitle = session.first('.header_with_cover_art-primary_info-title').text
+                    songtitle_with_underscores = (Zaru.sanitize! songtitle).gsub(/\s{1,}/, "_")
+
+                    lyrics_path = "%s/%s.txt" % [album_dir_path, songtitle_with_underscores]
+
+                    lyricsfile = File.open(lyrics_path, "w")
+                    lyricsfile.puts(lyricstext) 
+                    
+                    if verbose
+                        p "Lyrics for %s:" % songtitle
+                        puts lyricstext
+                    end
+
+                    lyricsfile.close
+                end
             end
         end
     end
