@@ -83,7 +83,6 @@ session = Capybara::Session.new(:poltergeist) do |config|
 end
 session.visit(searchurl)
 
-#begin
 if songname.length > 0
 # if the song name is supplied
     if session.has_selector?('search-result-section')
@@ -306,9 +305,6 @@ elsif artistname.length > 0
         end
     end
 end
-#rescue
-#    p 'No results found. Try adjusting your search parameters. If the problem persists, contact the developer at conejoplata@gmail.com'
-#end
 
 if lyricstext.length == 0
     p 'No results found. Try adjusting your search parameters. If the problem persists, contact the developer at conejoplata@gmail.com'
